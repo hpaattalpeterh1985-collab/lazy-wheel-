@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>耍廢ㄉ輪盤</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #33cae4;
+    padding: 50px;padding: 50px;background: linear-gradient(135deg,#4b6491,#3d8af7); /* ← 背景漸層 */
+  }
+  h1 { margin-bottom: 20px; }
+  /* 指針箭頭 */
+  #pointer {
+    position: relative;
+    width: 0;
+    height: 0;
+    margin: 0 auto -25px;  /* 負 margin 讓它貼近圓盤 */
+    border-left: 18px solid transparent;
+    border-right: 18px solid transparent;
+    border-bottom: 28px solid #e8290f; /* 箭頭顏色 */
+    top: 400px;
+    z-index: 10;
+  }
+  canvas {
+    margin: 0 auto 25px;
+    display: block;
+    border: 8px solid #333;
+    border-radius: 50%;
+  }
+  button {
+    padding: 10px 22px;
+    font-size: 16px;
+    cursor: pointer;
+    background: #333;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-family: Arial, sans-serif;
+  }
+  ul {
+    text-align: left;
+    max-width: 360px;
+    margin: 20px auto;
+    padding: 0;
+    list-style: none;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+  }
+  li {
+    margin: 4px 0;
+    padding-left: 1em;
+    text-indent: -1em;
+  }
+</style>
+</head>
+<body>
+<h1>🎯 耍廢ㄉ輪盤 🎯</h1>
+
+<!-- 固定箭頭 -->
+<div id="pointer"></div>
+
+<canvas id="wheel" width="400" height="400"></canvas>
+<button onclick="spin()">開始轉！</button>
+
+<h2>全部選項</h2>
+<ul id="taskList">
+  <li>睡覺</li>
+  <li>去洗澡</li>
+  <li>看 meme</li>
+  <li>滑手機</li>
+  <li>去吃宵夜</li>
+  <li>跳一首舞</li>
+  <li>不化妝一整天</li>
+  <li>購物車清空</li>
+  <li>去便利商店買一大堆零食</li>
+  <li>數 10 隻綿羊</li>
+  <li>聽一首覺得好笑卻沒有意義的歌</li>
+  <li>去追一集想看的影集</li>
+  <li>空想我有錢的時候我要躺在家</li>
+  <li>喝水 100ml</li>
+  <li>對電風扇唱歌</li>
+  <li>不講話一天，只用表情講話</li>
+  <li>請假一天</li>
+  <li>翹課一天</li>
+  <li>逃課一節</li>
+  <li>不接同學、老闆的電話一天</li>
+  <li>懷舊一天</li>
+</ul>
+
+<script>
+const tasks = Array.from(document.querySelectorAll('#taskList li')).map(li => li.textContent);
+const canvas = document.getElementById('wheel');
+const ctx = canvas.getContext('2d');
+const size = canvas.width;
+const center = size / 2;
+const slice = 2 * Math.PI / tasks.length;
+let rotation = 0;
+
+function randomColor(i){
+  const colors = ['#FF9999','#99CCFF','#99FF99','#FFCC99','#CCCCFF',
+                  '#FFD700','#FFA07A','#90EE90','#87CEFA'];
+  return colors[i % colors.length];
+}
+
+function drawWheel(){
+  ctx.clearRect(0,0,size,size);
+  for(let i=0;i<tasks.length;i++){
+    const angle = slice * i + rotation;
+    ctx.beginPath();
+    ctx.moveTo(center, center);
+    ctx.arc(center, center, center-5, angle, angle + slice);
+    ctx.fillStyle = randomColor(i);
+    ctx.fill();
+    ctx.stroke();
+
+    // 文字
+    ctx.save();
+    ctx.translate(center, center);
+    ctx.rotate(angle + slice/2);
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#000";
+    ctx.font = "10px Arial";   // 小一點的 Arial
+    ctx.fillText(tasks[i], center - 10, 4);
+    ctx.restore();
+  }
+}
+
+function spin(){
+  const spinDeg = Math.random() * 360 + 360*6;
+  const spinRad = spinDeg * Math.PI/180;
+  const duration = 4000;
+  const start = performance.now();
+
+  function animate(now){
+    const progress = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    rotation = spinRad * ease;
+    drawWheel();
+    if(progress < 1){
+      requestAnimationFrame(animate);
+    } else {
+      const deg = rotation * 180 / Math.PI % 360;
+      const index = tasks.length - Math.floor((deg / 360) * tasks.length) - 1;
+      alert("今天就要😍：「" + tasks[(index + tasks.length) % tasks.length] + "」");
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+drawWheel();
+</script>
+</body>
+</html>
